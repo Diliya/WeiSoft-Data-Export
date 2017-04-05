@@ -1,0 +1,12 @@
+; AddinDemo.def : Declares the module parameters for the DLL.
+
+LIBRARY      "AddinDemo"
+DESCRIPTION  'AddinDemo Windows Dynamic Link Library'
+
+EXPORTS
+    InitFinishedEx2		@1;
+	ShowAddinWindow		@2;
+	AddinUninitialize	@3;
+	GetAddinName		@4;
+	GetMainWindow		@5;
+
