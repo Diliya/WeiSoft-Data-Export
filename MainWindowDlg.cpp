@@ -416,7 +416,7 @@ void CMainWindowDlg::OnButton1Gedata()
 	CString cstsTmp;
 	((CComboBox*)GetDlgItem(IDC_CMBCONTRACT))->GetWindowText(cstsTmp);
 	strcpy(stData.m_szLabel,cstsTmp); //∫œ‘º
-	stData.m_nCustomCyc = 1;
+	//stData.m_nCustomCyc = 1;
 	int startyear = 2010;
 	int endyear = 2017;
 
