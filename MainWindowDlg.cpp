@@ -9,9 +9,8 @@
 #include <fstream>
 #include <iomanip>
 #include <shlwapi.h>
-#include "CSVFile.h"
-#include "stdlib.h"
 #include "io.h"
+#include <direct.h>  
 
 using namespace std;
 
@@ -28,8 +27,6 @@ static char THIS_FILE[] = __FILE__;
 CMainWindowDlg::CMainWindowDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CMainWindowDlg::IDD, pParent)
 	, m_strPath(_T(""))
-	, m_Contract(_T(""))
-	, m_TimeLevel(_T(""))
 {
 	//{{AFX_DATA_INIT(CMainWindowDlg)
 	m_iDirection = 0;
@@ -43,29 +40,31 @@ CMainWindowDlg::CMainWindowDlg(CWnd* pParent /*=NULL*/)
 	//}}AFX_DATA_INIT
 	m_bInit = TRUE;
 	//  m_save_path = _T("");
+	m_Contract = _T("");
+	m_TimeLevel = _T("");
 }
 
 
 void CMainWindowDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	////{{AFX_DATA_MAP(CMainWindowDlg)
-	//DDX_Control(pDX, IDC_EDIT_INFO, m_editMsg);
-	//DDX_Radio(pDX, IDC_RADIO1, m_iDirection);
-	//DDX_Radio(pDX, IDC_RADIO3, m_iOffSet);
-	//DDX_Text(pDX, IDC_EDIT_VOLUME, m_iVolume);
-	//DDX_Text(pDX, IDC_EDIT_PRICE, m_fPrice);
-	//DDX_CBIndex(pDX, IDC_COMBO1, m_iPriceType);
-	//DDX_Check(pDX, IDC_CHECK_HEDGE, m_bHedge);
-	//DDX_Text(pDX, IDC_EDIT_INSTRUMENTID, m_strInstrumentID);
-	//DDX_Text(pDX, IDC_EDIT_ORDERID, m_iOrderActionID);
+	//{{AFX_DATA_MAP(CMainWindowDlg)
+	DDX_Control(pDX, IDC_EDIT_INFO, m_editMsg);
+	DDX_Radio(pDX, IDC_RADIO1, m_iDirection);
+	DDX_Radio(pDX, IDC_RADIO3, m_iOffSet);
+	DDX_Text(pDX, IDC_EDIT_VOLUME, m_iVolume);
+	DDX_Text(pDX, IDC_EDIT_PRICE, m_fPrice);
+	DDX_CBIndex(pDX, IDC_COMBO1, m_iPriceType);
+	DDX_Check(pDX, IDC_CHECK_HEDGE, m_bHedge);
+	DDX_Text(pDX, IDC_EDIT_INSTRUMENTID, m_strInstrumentID);
+	DDX_Text(pDX, IDC_EDIT_ORDERID, m_iOrderActionID);
 	//}}AFX_DATA_MAP
 	//  DDX_Text(pDX, IDC_EDIT_SAVE_PATH, m_save_path);
-	DDX_Text(pDX, IDC_EDIT_SAVE_PATH, m_strPath);
-
-	DDX_Control(pDX, IDC_EDIT_SAVE_PATH, m_Path);
+	DDX_CBString(pDX, IDC_CMBCONTRACT, m_Contract);
+	DDX_CBString(pDX, IDC_CMBTIME, m_TimeLevel);
 	DDX_Control(pDX, IDC_CMBTIME, m_Time);
 	DDX_Control(pDX, IDC_CMBCONTRACT, m_Contr);
+	DDX_Text(pDX, IDC_EDIT_SAVE_PATH, m_strPath);
 }
 
 
@@ -80,10 +79,8 @@ BEGIN_MESSAGE_MAP(CMainWindowDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_ORDERACTION, OnButtonOrderAction)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_NOTIFY_UPDATE, OnNotifyUpdate)
-	//ON_BN_CLICKED(IDC_BTN_GET1MIN, &CMainWindowDlg::OnBnClickedBtnGet1min)
-	
-	
-	ON_BN_CLICKED(IDC_BUTTON_OPATH, &CMainWindowDlg::OnBnClickedButtonOpath)
+	ON_BN_CLICKED(IDC_BTN_GET1MIN, &CMainWindowDlg::OnBnClickedBtnGet1min)
+	ON_BN_CLICKED(IDC_BUTTON2, &CMainWindowDlg::OnBnClickedButton2)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -95,15 +92,7 @@ BOOL CMainWindowDlg::OnInitDialog()
 	
 	//去除任务栏窗口对应按钮
 	ModifyStyleEx (WS_EX_APPWINDOW,WS_EX_TOOLWINDOW );
-	//开始时禁用输出按钮
-	CWnd *okbtn = GetDlgItem( IDC_BUTTON1_GEDATA );
-	if ( okbtn ) {
-		okbtn->EnableWindow( FALSE );
-	}
-	//初始化时间级别选择框
-	((CComboBox*)GetDlgItem(IDC_CMBTIME))->AddString("Tick"); //为控件添加初始化数据
-	((CComboBox*)GetDlgItem(IDC_CMBTIME))->AddString("1Min"); //为控件添加初始化数据
-	m_Time.SetCurSel(1); //设置第nIndex项为显示的内容
+	
 	//记录状态
 	WritePrivateProfileInt("AddinDemo","AutoShow",1,"C:\\StockCfg.ini");  
 
@@ -117,7 +106,23 @@ BOOL CMainWindowDlg::OnInitDialog()
 	CString strText;
 	strText.Format("C:\\IF00Data\\1M\\");
 	GetDlgItem(IDC_EDIT_SAVE_PATH)->SetWindowText(strText);
-	
+	//开始时禁用输出按钮
+	CWnd *okbtn = GetDlgItem( IDC_BUTTON1_GEDATA );
+	if ( okbtn ) {
+		okbtn->EnableWindow( FALSE );
+	}
+	//初始化时间级别选择框
+	((CComboBox*)GetDlgItem(IDC_CMBTIME))->AddString("Tick"); //为控件添加初始化数据
+	((CComboBox*)GetDlgItem(IDC_CMBTIME))->AddString("1Min"); //为控件添加初始化数据
+	((CComboBox*)GetDlgItem(IDC_CMBTIME))->AddString("1Day"); //为控件添加初始化数据
+	((CComboBox*)GetDlgItem(IDC_CMBTIME))->AddString("2Day"); //为控件添加初始化数据
+	((CComboBox*)GetDlgItem(IDC_CMBTIME))->AddString("2Min"); //为控件添加初始化数据
+	m_Time.SetCurSel(1); //设置第nIndex项为显示的内容
+	//禁用路径文本框编辑功能
+	CWnd *editpath = GetDlgItem( IDC_EDIT_SAVE_PATH );
+	if ( editpath ) {
+		okbtn->EnableWindow( FALSE );
+	}
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -372,11 +377,45 @@ void CMainWindowDlg::OnButton1Gedata()
 
 void CMainWindowDlg::OnButton1Gedata() 
 {
+	UpdateData(TRUE);
 	PCALCINFO stData = {0};
-	stData.m_dataType = MIN1_DATA;//日线
+	CYC_DATA_TYPE tmpType;
+	CString cstrTmp;
+
+	((CComboBox*)GetDlgItem(IDC_CMBTIME))->GetWindowText(cstrTmp);
+	if (cstrTmp == "Tick")
+	{	
+		tmpType = TICK_DATA;
+	}
+	else if (cstrTmp == "2Day")
+	{
+		tmpType = MULTIDAY_DATA;
+		stData.m_nCustomCyc = 2;
+	}
+	else if (cstrTmp == "1Day")
+	{
+		tmpType = DAY_DATA;
+	}
+	else if (cstrTmp == "2Min")
+	{
+		tmpType = MULTIMIN_DATA;
+		stData.m_nCustomCyc = 2;
+	}
+	else if (cstrTmp == "1Min")
+	{
+		tmpType = MIN1_DATA;
+	}
+	else
+	{
+		AfxMessageBox("选取频段无效");
+		return;
+	}
+	stData.m_dataType = tmpType;//频段
 	stData.m_bIsPow = 0; //是否复权
 	stData.m_wMarket = 'JZ';
-	strcpy(stData.m_szLabel,"IF00"); //读取600000 浦发银行数据
+	CString cstsTmp;
+	((CComboBox*)GetDlgItem(IDC_CMBCONTRACT))->GetWindowText(cstsTmp);
+	strcpy(stData.m_szLabel,cstsTmp); //合约
 	stData.m_nCustomCyc = 1;
 	int startyear = 2010;
 	int endyear = 2017;
@@ -388,7 +427,36 @@ void CMainWindowDlg::OnButton1Gedata()
 		//CString filenamesql = "E:\\IF00Data\\CSV\\Min1\\";
 		CString filenamesql;
 		GetDlgItemText(IDC_EDIT_SAVE_PATH,filenamesql);//获取保存数据的路径
-
+		CString tmpPath = filenamesql+"\\Weisoft\\"+cstsTmp+"\\"+cstrTmp;
+		/*if (PathIsDirectory(tmpPath) == true)
+		{*/
+			CFileFind finder;
+			CString strdel,strdir;
+			strdir=tmpPath +"\\*";
+			BOOL b_found=finder.FindFile(strdir,0); 
+			while(b_found) 
+			{
+				b_found=finder.FindNextFile(); 
+				strdel=finder.GetFileName(); 
+				strdel=tmpPath + "\\" + strdel;
+				if(finder.IsReadOnly())//清除只读属性
+				{    
+					SetFileAttributes(strdel,GetFileAttributes(strdel)&(~FILE_ATTRIBUTE_READONLY));
+				}
+				DeleteFile(strdel); //删除文件
+			}
+			finder.Close();
+		/*}*/ 
+		filenamesql += ("\\Weisoft\\"+cstsTmp);
+		if(PathIsDirectory(filenamesql) == false)//判断文件夹是否存在
+		{
+			::CreateDirectory(filenamesql, NULL);//创建文件夹
+		}
+		filenamesql += ("\\"+cstrTmp);
+		if(PathIsDirectory(filenamesql) == false)//判断文件夹是否存在
+		{
+			::CreateDirectory(filenamesql, NULL);//创建文件夹
+		}
 		/*
 		if(!DirectoryExist(filenamesql))
 		{
@@ -433,7 +501,8 @@ void CMainWindowDlg::OnButton1Gedata()
 			{
 				sday.Format("%d", day);
 			}
-
+			
+			//mkdir(filenamesql);
 			filename = filenamesql + "\\" + syear + "_" + smonth + "_" + sday + ".csv";
 			ofs.open(filename, ios::app);
 			ofs << setprecision(20) << dtime << setprecision(6) << ","
@@ -608,135 +677,135 @@ bool CMainWindowDlg::CreateDirectory(CString path)
  return ::CreateDirectory( path, &attrib);
 }
 
-//void CMainWindowDlg::OnBnClickedBtnGet1min()
-//{
-//	// TODO: Add your control notification handler code here
-//		//读取上海市场的600000日线数据范例
-//	PCALCINFO stData = {0};
-//	stData.m_dataType = MIN1_DATA;//日线
-//	stData.m_bIsPow = 0; //是否复权
-//	stData.m_wMarket = 'JZ';
-//	strcpy(stData.m_szLabel,"IF00"); //读取600000 浦发银行数据
-//	stData.m_nCustomCyc = 1;
-//	int startyear = 2010;
-//	int endyear = 2017;
-//
-//	if(g_pMainFormework->GetDataInfo(&stData))
-//	{
-//		CString filenamesql;
-//		GetDlgItemText(IDC_EDIT_SAVE_PATH,filenamesql);//获取保存数据的路径
-//
-//		CString filename;
-//		int y = 2010;
-//		int m = 1;
-//		ofstream ofs;
-//		
-//		int lastday = 0;
-//		for(int i = 0; i <= stData.m_nNumData; i++)
-//		{
-//			if(i == stData.m_nNumData)
-//			{
-//				if(ofs.is_open() == true)
-//				{
-//					ofs.close();
-//				}
-//				break;
-//			}
-//			double dtime = stData.m_pMainData[i].m_timeDate;
-//			SYSTEMTIME ttime;
-//			VariantTimeToSystemTime(dtime, &ttime);
-//
-//			int year = ttime.wYear;
-//			int month = ttime.wMonth;
-//			int day = ttime.wDay;
-//			int hour = ttime.wHour;
-//			int minute = ttime.wMinute;
-//			CTime tmp(year, month, day, hour, minute, 0);
-//			CTimeSpan span(0, 0, 1, 0);
-//			CTime adj = tmp - span;
-//
-//			CString syear, smonth, sday, shour, sminute;
-//			syear.Format("%d", tmp.GetYear());
-//			if(adj.GetMonth() < 10)
-//			{
-//				smonth.Format("0%d", adj.GetMonth());
-//			}
-//			else
-//			{
-//				smonth.Format("%d", adj.GetMonth());
-//			}
-//			if(adj.GetDay() < 10)
-//			{
-//				sday.Format("0%d", adj.GetDay());
-//			}
-//			else
-//			{
-//				sday.Format("%d", adj.GetDay());
-//			}
-//			if(adj.GetHour() < 10)
-//			{
-//				shour.Format("0%d", adj.GetHour());
-//			}
-//			else
-//			{
-//				shour.Format("%d", adj.GetHour());
-//			}
-//			if(adj.GetMinute() < 10)
-//			{
-//				sminute.Format("0%d", adj.GetMinute());
-//			}
-//			else
-//			{
-//				sminute.Format("%d", adj.GetMinute());
-//			}
-//
-//			filename = filenamesql+"\\SQL\\" + syear +"-"+smonth+"-"+sday+ ".txt";
-//			if(adj.GetDay() != lastday)
-//			{
-//				if(ofs.is_open() == true)
-//				{
-//					ofs.close();
-//				}
-//				ofs.open(filename);
-//				lastday = adj.GetDay();
-//			}
-//			if(ofs.is_open() == false)
-//			{
-//				continue;
-//			}
-//
-//			CString sqltime = syear + "-" + smonth + "-" + sday + " " + shour + ":" + sminute + ":" + "59.999";
-//
-//			ofs << "insert into Bar(closetime, date, high, low, open, close, volume, adjclose, openint) Values('"
-//				<< sqltime << "',"
-//				<< setprecision(20) << dtime << setprecision(6) << ","
-//				<< stData.m_pMainData[i].m_fHigh << ","
-//				<< stData.m_pMainData[i].m_fLow << ","
-//				<< stData.m_pMainData[i].m_fOpen << ","
-//				<< stData.m_pMainData[i].m_fClose << ","
-//				<< stData.m_pMainData[i].m_fVolume << ","
-//				<< stData.m_pMainData[i].m_fClose << ","
-//				<< stData.m_pMainData[i].m_fOI << ");" << endl;
-//		}
-//
-//		AfxMessageBox("数据输出完成!");
-//
-//		/*
-//		for(int y = startyear; y <= endyear; y++)
-//		{
-//			CString t;
-//			t.Format("%d", y);
-//			CString filename = filenamesql + t +".txt";
-//			ofs.open(filename,ios::app);
-//			ofs << "end;";
-//			ofs.close();
-//		}
-//		*/
-//	}
-//}
+void CMainWindowDlg::OnBnClickedBtnGet1min()
+{
+	// TODO: Add your control notification handler code here
+		//读取上海市场的600000日线数据范例
+	PCALCINFO stData = {0};
+	stData.m_dataType = MIN1_DATA;//日线
+	stData.m_bIsPow = 0; //是否复权
+	stData.m_wMarket = 'JZ';
+	strcpy(stData.m_szLabel,"IF00"); //读取600000 浦发银行数据
+	stData.m_nCustomCyc = 1;
+	int startyear = 2010;
+	int endyear = 2017;
 
-//选择文件夹按钮点击事件
-void CMainWindowDlg::OnBnClickedButtonOpath()
+	if(g_pMainFormework->GetDataInfo(&stData))
+	{
+		CString filenamesql;
+		GetDlgItemText(IDC_EDIT_SAVE_PATH,filenamesql);//获取保存数据的路径
+
+		CString filename;
+		int y = 2010;
+		int m = 1;
+		ofstream ofs;
+		
+		int lastday = 0;
+		for(int i = 0; i <= stData.m_nNumData; i++)
+		{
+			if(i == stData.m_nNumData)
+			{
+				if(ofs.is_open() == true)
+				{
+					ofs.close();
+				}
+				break;
+			}
+			double dtime = stData.m_pMainData[i].m_timeDate;
+			SYSTEMTIME ttime;
+			VariantTimeToSystemTime(dtime, &ttime);
+
+			int year = ttime.wYear;
+			int month = ttime.wMonth;
+			int day = ttime.wDay;
+			int hour = ttime.wHour;
+			int minute = ttime.wMinute;
+			CTime tmp(year, month, day, hour, minute, 0);
+			CTimeSpan span(0, 0, 1, 0);
+			CTime adj = tmp - span;
+
+			CString syear, smonth, sday, shour, sminute;
+			syear.Format("%d", tmp.GetYear());
+			if(adj.GetMonth() < 10)
+			{
+				smonth.Format("0%d", adj.GetMonth());
+			}
+			else
+			{
+				smonth.Format("%d", adj.GetMonth());
+			}
+			if(adj.GetDay() < 10)
+			{
+				sday.Format("0%d", adj.GetDay());
+			}
+			else
+			{
+				sday.Format("%d", adj.GetDay());
+			}
+			if(adj.GetHour() < 10)
+			{
+				shour.Format("0%d", adj.GetHour());
+			}
+			else
+			{
+				shour.Format("%d", adj.GetHour());
+			}
+			if(adj.GetMinute() < 10)
+			{
+				sminute.Format("0%d", adj.GetMinute());
+			}
+			else
+			{
+				sminute.Format("%d", adj.GetMinute());
+			}
+
+			filename = filenamesql+"\\SQL\\" + syear +"-"+smonth+"-"+sday+ ".txt";
+			if(adj.GetDay() != lastday)
+			{
+				if(ofs.is_open() == true)
+				{
+					ofs.close();
+				}
+				ofs.open(filename);
+				lastday = adj.GetDay();
+			}
+			if(ofs.is_open() == false)
+			{
+				continue;
+			}
+
+			CString sqltime = syear + "-" + smonth + "-" + sday + " " + shour + ":" + sminute + ":" + "59.999";
+
+			ofs << "insert into Bar(closetime, date, high, low, open, close, volume, adjclose, openint) Values('"
+				<< sqltime << "',"
+				<< setprecision(20) << dtime << setprecision(6) << ","
+				<< stData.m_pMainData[i].m_fHigh << ","
+				<< stData.m_pMainData[i].m_fLow << ","
+				<< stData.m_pMainData[i].m_fOpen << ","
+				<< stData.m_pMainData[i].m_fClose << ","
+				<< stData.m_pMainData[i].m_fVolume << ","
+				<< stData.m_pMainData[i].m_fClose << ","
+				<< stData.m_pMainData[i].m_fOI << ");" << endl;
+		}
+
+		AfxMessageBox("数据输出完成!");
+
+		/*
+		for(int y = startyear; y <= endyear; y++)
+		{
+			CString t;
+			t.Format("%d", y);
+			CString filename = filenamesql + t +".txt";
+			ofs.open(filename,ios::app);
+			ofs << "end;";
+			ofs.close();
+		}
+		*/
+	}
+}
+
+
+void CMainWindowDlg::OnBnClickedButton2()
 {
 	// TODO: Add your control notification handler code here
 	UpdateData(TRUE);
@@ -821,6 +890,4 @@ void CMainWindowDlg::OnBnClickedButtonOpath()
 			  
 		   }
 		   
-	  
 }
-

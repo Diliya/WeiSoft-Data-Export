@@ -17,7 +17,6 @@
 #define IDC_RADIO4                      6037
 #define IDC_RADIO5                      6038
 #define IDC_COMBO1                      6039
-#define IDC_CMBCONTRACT                 6039
 #define IDC_EDIT_PRICE                  6040
 #define IDC_EDIT_VOLUME                 6041
 #define IDC_BUTTON_ORDERIN              6042
@@ -26,16 +25,18 @@
 #define IDC_EDIT_SAVE_PATH              6049
 #define IDC_BUTTON1                     6050
 #define IDC_BTN_GET1MIN                 6050
-#define IDC_BUTTON_OPATH                6050
-#define IDC_CMBTIME                     6051
+#define IDC_BUTTON2                     6051
+#define IDC_CMBTIME                     6052
+#define IDC_CMBCONTRACT                 6053
+#define IDC_COMBO3                      6055
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        6006
+#define _APS_NEXT_RESOURCE_VALUE        6005
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         6052
+#define _APS_NEXT_CONTROL_VALUE         6056
 #define _APS_NEXT_SYMED_VALUE           6000
 #endif
 #endif

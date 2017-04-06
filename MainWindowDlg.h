@@ -80,15 +80,12 @@ private:
 public:
 //	CString m_save_path;
 	afx_msg void OnBnClickedBtnGet1min();
-	CString m_strPath;
-	afx_msg void OnBnClickedButton1();
-	afx_msg void OnBnDoubleclickedButtonOpath();
-	afx_msg void OnBnClickedButtonOpath();
 	CString m_Contract;
 	CString m_TimeLevel;
-	CEdit m_Path;
 	CComboBox m_Time;
 	CComboBox m_Contr;
+	afx_msg void OnBnClickedButton2();
+	CString m_strPath;
 };
 
 //{{AFX_INSERT_LOCATION}}

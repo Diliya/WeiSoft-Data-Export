@@ -200,7 +200,7 @@
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <OutputFile>C:\WeiStock(x86)\WeisoftDataLanding.adi</OutputFile>
+      <OutputFile>C:\WeiStock(x86)\WeiSoftDataLanding.adi</OutputFile>
       <ImportLibrary>.\Debug\AddinDemo.lib</ImportLibrary>
       <ModuleDefinitionFile>.\AddinDemo.def</ModuleDefinitionFile>
     </Link>
@@ -264,7 +264,6 @@
   <ItemGroup>
     <ClInclude Include="AddinDemo.h" />
     <ClInclude Include="AddinInterface.h" />
-    <ClInclude Include="CSVFile.h" />
     <ClInclude Include="LogInfo.h" />
     <ClInclude Include="MainWindowDlg.h" />
     <ClInclude Include="Resource.h" />

@@ -165,7 +165,7 @@ void WINAPI GetAddinName(char * pszName, int nSize /*=MAX_PATH*/)
 	//插件名字拷贝缓冲区 nSize 字节之内 
 
 	//strcpy(pszName,"IF00_1分钟线");
-	//strcpy(pszName,"SBMFC");
+
 	strcpy(pszName,"金字塔数据落盘");
 
 }
