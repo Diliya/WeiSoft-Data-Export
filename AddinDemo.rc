@@ -133,7 +133,7 @@ BEGIN
     LTEXT           "2、该工程为DLL工程，编译后扩展名为ADI文件，将其放在金字塔主目录下运行即可（在工具菜单->扩展中看到你的插件）",IDC_STATIC,19,22,8,8,NOT WS_VISIBLE
     LTEXT           "市场+品种代码",IDC_STATIC,17,21,8,8,NOT WS_VISIBLE
     LTEXT           "3、请注意金字塔的版本,如果是x64模式的金字塔版本,请将你的DLL也编译成64位版本才可以使用。",IDC_STATIC,19,21,8,8,NOT WS_VISIBLE
-    EDITTEXT        IDC_EDIT_SAVE_PATH,81,17,248,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_SAVE_PATH,81,17,248,14,ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "2、获取历史1Min数据到SQL",IDC_BTN_GET1MIN,17,19,6,6,NOT WS_VISIBLE
     LTEXT           "保存路径：",IDC_STATIC,40,20,41,8
     LTEXT           "2、保存到：“保存路径”+\\SQL\\  \n每天生成一个SQL语句的文件",IDC_STATIC,16,18,8,8,NOT WS_VISIBLE
