@@ -374,6 +374,12 @@ void CMainWindowDlg::OnButton1Gedata()
 	}
 }
 */
+void OutputTickData()
+{
+	
+
+}
+
 
 void CMainWindowDlg::OnButton1Gedata() 
 {
@@ -386,6 +392,90 @@ void CMainWindowDlg::OnButton1Gedata()
 	if (cstrTmp == "Tick")
 	{	
 		tmpType = TICK_DATA;
+		PCALCINFO stData = {0};
+		stData.m_dataType = TICK_DATA;//单笔
+		stData.m_bIsPow = 0; //是否复权
+		stData.m_wMarket = 'JZ';
+		strcpy(stData.m_szLabel,"IF00");
+		//const int sleepperiod = 1000 * 60 * 60 * 24;
+		const int sleepperiod = 1000 * 60 * 60 * 24;
+
+		time_t tt = time(NULL);
+		tm* t = localtime(&tt);
+		int sys_year = t->tm_year + 1900;
+		int sys_month = t->tm_mon + 1;
+		int sys_day = t->tm_mday;
+		//int sys_hour = t->tm_hour;
+		//int sys_minute = t->tm_min;
+		//int sys_second = t->tm_sec;
+		CString filename;
+		CString filenamesql;
+		GetDlgItemText(IDC_EDIT_SAVE_PATH,filenamesql);//获取保存数据的路径
+		CString cstsTmp;
+		((CComboBox*)GetDlgItem(IDC_CMBCONTRACT))->GetWindowText(cstsTmp);
+		CString directory = filenamesql+"\\WeiSoft\\"+cstsTmp+"\\Tick";
+
+		if(PathIsDirectory(directory) == false)
+		{
+			::CreateDirectory(directory, NULL);
+		}
+
+		CString tmp;
+		tmp.Format("%d", sys_year);
+		directory = directory + "\\" + tmp;
+		if(PathIsDirectory(directory) == false)
+		{
+			::CreateDirectory(directory, NULL);
+		}
+
+		tmp.Format("%d", sys_month);
+		directory = directory + "\\" + tmp;
+		if(PathIsDirectory(directory) == false)//判断文件夹是否存在
+		{
+			::CreateDirectory(directory, NULL);//创建文件夹
+		}
+
+		filename.Format("%d年%d月%d日Tick数据.csv", sys_year, sys_month, sys_day);
+		//filename.Format("%d年%d月%d日Tick数据.csv", sys_year, sys_month, sys_day);
+		filename = directory + "\\" + filename;
+		if (!PathFileExists(filename))
+		{
+
+
+			if(g_pMainFormework->GetDataInfo(&stData))
+			{
+				if(stData.m_pSubsection != NULL)
+				{
+					ofstream ofs(filename);
+					ofs << "m_fBuyVolume" << ","
+						<< "m_fSellVolume" << ","
+						<< "m_bOrder" << ","
+						<< "m_timeV2" << ","
+						<< "m_fBuyPrice" << ","
+						<< "m_fSellPrice" << ","
+						<< "m_fNewPrice" << ","
+						<< "m_fOI" << ","
+						<< "m_fVolume" << ","
+						<< "m_fAmount" << endl;
+					for(int i = 0; i < stData.m_nNumSubData; i++)
+					{
+						ofs << stData.m_pSubsection[i].m_fBuyVolume << ","
+							<< stData.m_pSubsection[i].m_fSellVolume << ","
+							<< stData.m_pSubsection[i].m_bOrder << ","
+							<< stData.m_pSubsection[i].m_timeV2 << ","
+							<< stData.m_pSubsection[i].m_fBuyPrice << ","
+							<< stData.m_pSubsection[i].m_fSellPrice << ","
+							<< stData.m_pSubsection[i].m_fNewPrice << ","
+							<< stData.m_pSubsection[i].m_fOI << ","
+							<< stData.m_pSubsection[i].m_fVolume << ","
+							<< stData.m_pSubsection[i].m_fAmount << endl;
+					}
+					ofs.close();
+				}
+			}
+		}
+		//OutputTickData();
+		return;
 	}
 	else if (cstrTmp == "2Day")
 	{
@@ -416,7 +506,7 @@ void CMainWindowDlg::OnButton1Gedata()
 	CString cstsTmp;
 	((CComboBox*)GetDlgItem(IDC_CMBCONTRACT))->GetWindowText(cstsTmp);
 	strcpy(stData.m_szLabel,cstsTmp); //合约
-	//stData.m_nCustomCyc = 1;
+	stData.m_nCustomCyc = 1;
 	int startyear = 2010;
 	int endyear = 2017;
 
@@ -472,8 +562,10 @@ void CMainWindowDlg::OnButton1Gedata()
 		CString ss;
 		ss.Format("%d", stData.m_nNumData);
 		//AfxMessageBox(filenamesql);
+		
 		for(int i = 0; i < stData.m_nNumData; i++)
 		{
+			
 			double dtime = stData.m_pMainData[i].m_timeDate;
 			SYSTEMTIME ttime;
 			VariantTimeToSystemTime(dtime, &ttime);
@@ -503,8 +595,9 @@ void CMainWindowDlg::OnButton1Gedata()
 			}
 			
 			//mkdir(filenamesql);
-			filename = filenamesql + "\\" + syear + "_" + smonth + "_" + sday + ".csv";
-			ofs.open(filename, ios::app);
+			filename = filenamesql + "\\CSV\\" + syear + "_" + smonth + "_" + sday + ".csv";
+			
+			ofs.open(filename,ios::app);
 			ofs << setprecision(20) << dtime << setprecision(6) << ","
 				<< stData.m_pMainData[i].m_fHigh << ","
 				<< stData.m_pMainData[i].m_fLow << ","
@@ -514,6 +607,7 @@ void CMainWindowDlg::OnButton1Gedata()
 				<< stData.m_pMainData[i].m_fClose << ","
 				<< stData.m_pMainData[i].m_fOI << endl;
 			ofs.close();
+		
 		}
 
 		AfxMessageBox("数据输出完成!");
